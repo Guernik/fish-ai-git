@@ -8,8 +8,7 @@ default:
 install:
     fish -c "fisher install {{justfile_directory()}}"
 
-# Symlink functions + conf.d into ~/.config/fish for live development, so a
-# `git pull` in this repo is reflected immediately without reinstalling.
+# Symlink functions + conf.d into ~/.config/fish for live development.
 install-dev:
     #!/usr/bin/env fish
     set -l src {{justfile_directory()}}
@@ -23,8 +22,7 @@ install-dev:
     end
     echo "Linked. Open a new shell or run: exec fish"
 
-# Remove the dev symlinks created by install-dev (only removes links pointing
-# back into this repo; leaves real files alone).
+# Remove the dev symlinks created by install-dev (leaves real files alone).
 uninstall-dev:
     #!/usr/bin/env fish
     set -l src {{justfile_directory()}}
@@ -59,9 +57,7 @@ lint:
 fmt:
     fish_indent -w functions/*.fish conf.d/*.fish tests/*.fish tests/helpers/*.fish
 
-# Run the fishtape test suite. Requires fishtape to be installed:
-#     fisher install jorgebucaran/fishtape
-# See https://github.com/jorgebucaran/fishtape
+# Run the fishtape test suite (needs: fisher install jorgebucaran/fishtape).
 test:
     #!/usr/bin/env fish
     if not functions -q fishtape
@@ -74,3 +70,21 @@ test:
     # `fishtape tests/*.test.fish` from inside a just recipe mis-counts the
     # TAP summary, so invoke it via `fish -c` with the expanded glob.
     fish -c 'fishtape tests/*.test.fish'
+
+# Install the pre-commit hooks (lint on commit, tests on push; needs pre-commit).
+install-hooks:
+    #!/usr/bin/env fish
+    if not command -q pre-commit
+        echo "pre-commit is not installed. See https://pre-commit.com/#install" >&2
+        echo "    pip install pre-commit   # or: brew install pre-commit" >&2
+        exit 1
+    end
+    pre-commit install
+    pre-commit install --hook-type pre-push
+
+# Remove local dev/test artifacts (nothing here is tracked by git).
+clean:
+    #!/usr/bin/env fish
+    rm -rf {{justfile_directory()}}/.test-deps
+    find {{justfile_directory()}} -name .DS_Store -type f -delete
+    echo "cleaned"

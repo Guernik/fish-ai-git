@@ -112,11 +112,10 @@ exercise the real logic (diff filtering, base-branch detection, the confirm/abor
 paths) without calling any network service.
 
 Optional [pre-commit](https://pre-commit.com/) hooks run `just lint` on commit
-and `just test` on push:
+and `just test` on push. With [pre-commit installed](https://pre-commit.com/#install):
 
 ```fish
-pre-commit install
-pre-commit install --hook-type pre-push
+just install-hooks
 ```
 
 ## License
