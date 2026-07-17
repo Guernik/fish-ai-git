@@ -10,6 +10,15 @@ The AI functions call the [Claude Code CLI](https://claude.com/claude-code)
 (`claude`), so the diff never leaves your machine except through your own
 Claude account.
 
+## Contents
+
+- [Functions](#functions)
+- [Requirements](#requirements)
+- [Install](#install)
+- [Configuration](#configuration)
+- [Development](#development)
+- [License](#license)
+
 ## Functions
 
 | Function | What it does |
