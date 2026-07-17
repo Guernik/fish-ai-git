@@ -10,6 +10,26 @@ The AI functions call the [Claude Code CLI](https://claude.com/claude-code)
 (`claude`), so the diff never leaves your machine except through your own
 Claude account.
 
+## Installation
+
+### Using [fisher](https://github.com/jorgebucaran/fisher)?
+
+```console
+fisher install Guernik/fish-ai-git
+```
+
+Update later with `fisher update`.
+
+### Directly from repo
+
+```console
+git clone https://github.com/Guernik/fish-ai-git
+cd fish-ai-git
+just install-dev     # symlinks functions/ and conf.d/ into ~/.config/fish
+```
+
+Remove the links with `just uninstall-dev`.
+
 ## Contents
 
 - [Functions](#functions)
@@ -21,16 +41,16 @@ Claude account.
 
 ## Functions
 
-| Function | What it does |
-| --- | --- |
-| `ac` | Stage **all** changes and commit with an AI-generated Conventional Commit message. Shows the message and asks before committing (`y` to commit, `e` to edit, `n` to abort). |
-| `ghpr` | Push the current branch and open a GitHub PR with an AI-generated title and body. Detects the base branch automatically; `w` opens the browser pre-filled instead of creating directly. |
-| `gitm` | Switch to the repo's default branch, `pull`, and delete the branch you left (only if it's already merged — unmerged work is never dropped). |
-| `gitc` | Shorthand for `git checkout` (with `git checkout` completions). |
+| Function | What it does                                                                                                                                                                            |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ac`     | Stage **all** changes and commit with an AI-generated Conventional Commit message. Shows the message and asks before committing (`y` to commit, `e` to edit, `n` to abort).             |
+| `ghpr`   | Push the current branch and open a GitHub PR with an AI-generated title and body. Detects the base branch automatically; `w` opens the browser pre-filled instead of creating directly. |
+| `gitm`   | Switch to the repo's default branch, `pull`, and delete the branch you left (only if it's already merged — unmerged work is never dropped).                                             |
+| `gitc`   | Shorthand for `git checkout` (with `git checkout` completions).                                                                                                                         |
 
 ### Examples
 
-```fish
+```console
 # On a feature branch, after making changes:
 ac
 # → Generating commit message…
@@ -56,29 +76,6 @@ gitm
 Each function checks for the tools it needs and prints an install hint if one is
 missing.
 
-## Install
-
-### Fisher (recommended)
-
-```fish
-fisher install Guernik/fish-ai-git
-```
-
-Update later with `fisher update`.
-
-### Development (symlink, live-editing)
-
-Clone the repo and symlink it into your fish config so a `git pull` is reflected
-immediately:
-
-```fish
-git clone https://github.com/Guernik/fish-ai-git
-cd fish-ai-git
-just install-dev     # symlinks functions/ and conf.d/ into ~/.config/fish
-```
-
-Remove the links with `just uninstall-dev`.
-
 ## Configuration
 
 `ac` and `ghpr` use Claude's `haiku` model by default. On install, the plugin
@@ -86,7 +83,7 @@ seeds `AC_MODEL` and `GHPR_MODEL` as universal variables (via Fisher's
 [event system](https://github.com/jorgebucaran/fisher#event-system)) — only if
 you haven't already set them. Override either at any time:
 
-```fish
+```console
 set -Ux AC_MODEL sonnet
 set -Ux GHPR_MODEL sonnet
 ```
@@ -106,7 +103,7 @@ list at the top of each function to tune this.
 
 This repo uses a [`justfile`](justfile):
 
-```fish
+```console
 just            # list recipes
 just lint       # syntax + formatting check (fish -n, fish_indent --check)
 just fmt        # auto-format every fish file
@@ -116,7 +113,7 @@ just test       # run the fishtape suite (mocks claude/gh; real temp git repos)
 Tests use [fishtape](https://github.com/jorgebucaran/fishtape). Install it once
 with fisher (the [documented](https://github.com/jorgebucaran/fishtape) way):
 
-```fish
+```console
 fisher install jorgebucaran/fishtape
 ```
 
@@ -128,7 +125,7 @@ paths) without calling any network service.
 Optional [pre-commit](https://pre-commit.com/) hooks run `just lint` on commit
 and `just test` on push. With [pre-commit installed](https://pre-commit.com/#install):
 
-```fish
+```console
 just install-hooks
 ```
 
