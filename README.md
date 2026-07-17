@@ -1,5 +1,4 @@
 # fish-ai-git
-
 A small, focused set of [fish](https://fishshell.com/) functions for an
 AI-assisted git workflow. Stage-and-commit with an AI-written
 [Conventional Commit](https://www.conventionalcommits.org/) message, open a
@@ -9,6 +8,16 @@ round out the loop.
 The AI functions call the [Claude Code CLI](https://claude.com/claude-code)
 (`claude`), so the diff never leaves your machine except through your own
 Claude account.
+
+**1. Auto commit** and **GH PR**  
+
+https://github.com/user-attachments/assets/4e26e62b-01b6-496c-b92c-aa978dc4f766
+
+**2. Checkout main, pull, and delete merged branch**  
+
+https://github.com/user-attachments/assets/958a07ad-5350-4e9c-bd17-80a9a4f8724b  
+
+(Warning due to the use of squash merge)
 
 ## Installation
 
