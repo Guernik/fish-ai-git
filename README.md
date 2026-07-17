@@ -72,14 +72,19 @@ Remove the links with `just uninstall-dev`.
 
 ## Configuration
 
-`ac` and `ghpr` use Claude's `haiku` model by default. Override per-function:
+`ac` and `ghpr` use Claude's `haiku` model by default. On install, the plugin
+seeds `AC_MODEL` and `GHPR_MODEL` as universal variables (via Fisher's
+[event system](https://github.com/jorgebucaran/fisher#event-system)) — only if
+you haven't already set them. Override either at any time:
 
 ```fish
 set -Ux AC_MODEL sonnet
 set -Ux GHPR_MODEL sonnet
 ```
 
-The defaults live in [`conf.d/fish-ai-git.fish`](conf.d/fish-ai-git.fish); the
+Your override is preserved across `fisher update`, and left untouched on
+`fisher remove` (only the untouched `haiku` default is cleaned up). The event
+handlers live in [`conf.d/fish-ai-git.fish`](conf.d/fish-ai-git.fish); the
 functions also self-default, so they still work if copied out of the plugin.
 
 Both `ac` and `ghpr` exclude noisy generated files (lockfiles, minified assets,
