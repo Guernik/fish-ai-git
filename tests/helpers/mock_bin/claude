@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Mock `claude` CLI for tests.
+#
+# - Records everything it receives on stdin to $MOCK_CLAUDE_STDIN (if set) so a
+#   test can assert on what the function sent to the model.
+# - Records its argv to $MOCK_CLAUDE_ARGS (if set).
+# - Prints canned output: the contents of $MOCK_CLAUDE_OUTPUT if set, otherwise
+#   a default Conventional-Commit-shaped message.
+set -euo pipefail
+
+stdin_content="$(cat)"
+
+if [ -n "${MOCK_CLAUDE_STDIN:-}" ]; then
+    printf '%s' "$stdin_content" >"$MOCK_CLAUDE_STDIN"
+fi
+
+if [ -n "${MOCK_CLAUDE_ARGS:-}" ]; then
+    printf '%s\n' "$@" >"$MOCK_CLAUDE_ARGS"
+fi
+
+if [ -n "${MOCK_CLAUDE_OUTPUT:-}" ]; then
+    printf '%s\n' "$MOCK_CLAUDE_OUTPUT"
+else
+    cat <<'EOF'
+chore: mock commit message
+
+A canned message produced by the test mock so ac/ghpr have something to
+show and commit.
+
+Changes:
+- do the thing the diff describes
+EOF
+fi

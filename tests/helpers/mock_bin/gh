@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Mock `gh` CLI for tests. Records its full argv to $MOCK_GH_ARGS (if set) so a
+# test can assert the title/body/base/head passed to `gh pr create`. Always
+# succeeds and prints a fake PR URL.
+set -euo pipefail
+
+if [ -n "${MOCK_GH_ARGS:-}" ]; then
+    : >"$MOCK_GH_ARGS"
+    for arg in "$@"; do
+        printf '%s\n' "$arg" >>"$MOCK_GH_ARGS"
+    done
+fi
+
+echo "https://github.com/example/repo/pull/1"

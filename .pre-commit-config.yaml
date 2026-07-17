@@ -1,0 +1,30 @@
+# Pre-commit hooks for fish-ai-git.
+#
+#   pip install pre-commit   (or: brew install pre-commit)
+#   pre-commit install                 # run lint on every commit
+#   pre-commit install --hook-type pre-push   # run tests before push
+#
+# Lint is fast and runs on commit; the full test suite runs on push.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: fish-lint
+        name: fish lint (syntax + formatting)
+        entry: just lint
+        language: system
+        pass_filenames: false
+        files: \.fish$
+
+      - id: fish-test
+        name: fishtape suite
+        entry: just test
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

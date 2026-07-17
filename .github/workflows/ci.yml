@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install fish
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fish
+
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Lint (syntax + formatting)
+        run: just lint
+
+      - name: Test (fishtape with mocked CLIs)
+        run: just test
