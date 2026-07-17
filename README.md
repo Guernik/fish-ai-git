@@ -99,12 +99,17 @@ just fmt        # auto-format every fish file
 just test       # run the fishtape suite (mocks claude/gh; real temp git repos)
 ```
 
-`just test` installs [fishtape](https://github.com/jorgebucaran/fishtape) into a
-local `.test-deps/` directory, isolated from your real fish config. Tests mock
-the `claude` and `gh` CLIs as PATH shims and run against throwaway git repos
-wired to a local bare remote, so they exercise the real logic (diff filtering,
-base-branch detection, the confirm/abort paths) without calling any network
-service.
+Tests use [fishtape](https://github.com/jorgebucaran/fishtape). Install it once
+with fisher (the [documented](https://github.com/jorgebucaran/fishtape) way):
+
+```fish
+fisher install jorgebucaran/fishtape
+```
+
+`just test` then runs the suite. Tests mock the `claude` and `gh` CLIs as PATH
+shims and run against throwaway git repos wired to a local bare remote, so they
+exercise the real logic (diff filtering, base-branch detection, the confirm/abort
+paths) without calling any network service.
 
 Optional [pre-commit](https://pre-commit.com/) hooks run `just lint` on commit
 and `just test` on push:

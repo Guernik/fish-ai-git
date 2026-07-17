@@ -1,5 +1,2 @@
-# Isolated test dependencies (fisher + fishtape) installed by `just test`.
-.test-deps/
-
 # macOS
 .DS_Store

@@ -19,6 +19,13 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v2
 
+      - name: Install fishtape (pinned)
+        run: |
+          git clone --depth 1 --branch 3.0.1 \
+            https://github.com/jorgebucaran/fishtape "$RUNNER_TEMP/fishtape"
+          mkdir -p ~/.config/fish/functions
+          cp "$RUNNER_TEMP/fishtape"/functions/*.fish ~/.config/fish/functions/
+
       - name: Lint (syntax + formatting)
         run: just lint
 

@@ -1,10 +1,6 @@
 # fish-ai-git — task runner.
 # Run `just` with no arguments to list recipes.
 
-# Where test dependencies (fisher + fishtape) are installed, isolated from your
-# real fish config so tests never touch ~/.config/fish.
-test_deps := justfile_directory() / ".test-deps"
-
 default:
     @just --list
 
@@ -63,29 +59,18 @@ lint:
 fmt:
     fish_indent -w functions/*.fish conf.d/*.fish tests/*.fish tests/helpers/*.fish
 
-# Install fishtape into an isolated location (if missing), then run the suite.
-test: _ensure-fishtape
+# Run the fishtape test suite. Requires fishtape to be installed:
+#     fisher install jorgebucaran/fishtape
+# See https://github.com/jorgebucaran/fishtape
+test:
     #!/usr/bin/env fish
-    set -gx XDG_DATA_HOME {{test_deps}}/data
-    set -gx XDG_CONFIG_HOME {{test_deps}}/config
+    if not functions -q fishtape
+        echo "fishtape is not installed. Install it with:" >&2
+        echo "    fisher install jorgebucaran/fishtape" >&2
+        echo "See https://github.com/jorgebucaran/fishtape" >&2
+        exit 1
+    end
     # Run in a fresh fish so fishtape's per-run state starts clean; a plain
     # `fishtape tests/*.test.fish` from inside a just recipe mis-counts the
     # TAP summary, so invoke it via `fish -c` with the expanded glob.
     fish -c 'fishtape tests/*.test.fish'
-
-# Install fisher + fishtape into the isolated test-deps dir if not already there.
-_ensure-fishtape:
-    #!/usr/bin/env fish
-    set -gx XDG_DATA_HOME {{test_deps}}/data
-    set -gx XDG_CONFIG_HOME {{test_deps}}/config
-    mkdir -p $XDG_CONFIG_HOME/fish
-    if functions -q fishtape
-        exit 0
-    end
-    echo "Installing fishtape into {{test_deps}} …"
-    curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
-    fisher install jorgebucaran/fishtape
-
-# Remove the isolated test dependencies.
-clean:
-    rm -rf {{test_deps}}
