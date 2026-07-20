@@ -1,4 +1,20 @@
 function ac --description "Stage all changes and commit with an AI-generated Conventional Commit message"
+    argparse h/help -- $argv
+    or return 1
+    if set -q _flag_help
+        echo "usage: ac [-h|--help]"
+        echo
+        echo "Stage all changes (git add -A) and commit with an AI-generated"
+        echo "Conventional Commit message. Shows the message and prompts before"
+        echo "committing: [Y] commit, [e] edit in \$EDITOR, [n] abort (changes"
+        echo "stay staged)."
+        echo
+        echo "The model defaults to \$AC_MODEL (haiku). Noisy/generated files"
+        echo "(lockfiles, minified assets, dist/, build/, snapshots) are hidden"
+        echo "from the diff sent to the model, but every staged file is committed."
+        return 0
+    end
+
     if not command -q claude
         echo "claude CLI not found. Install it from https://claude.com/claude-code."
         return 1

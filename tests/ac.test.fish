@@ -64,3 +64,21 @@ set -l staged (command git diff --cached --name-only)
 @test "ac leaves changes staged when the user aborts" (string match -q '*abort.txt*' -- "$staged"; echo $status) -eq 0
 @test "ac creates no commit when the user aborts" (command git log -1 --pretty=%s) = "chore: initial commit"
 teardown $repo
+
+# --- --help prints usage without staging or calling the model ----------------
+set repo (setup_repo)
+use_mocks
+set -l args_capture (command mktemp)
+set -gx MOCK_CLAUDE_ARGS $args_capture
+: >$args_capture
+set -l out (ac --help 2>&1)
+@test "ac --help exits 0" $status -eq 0
+@test "ac --help prints usage" (string match -q '*usage: ac*' -- "$out"; echo $status) -eq 0
+@test "ac --help does not invoke claude" (test -s $args_capture; echo $status) -eq 1
+@test "ac --help creates no commit" (command git log -1 --pretty=%s) = "chore: initial commit"
+set -l out2 (ac -h 2>&1)
+@test "ac -h exits 0" $status -eq 0
+@test "ac -h prints usage" (string match -q '*usage: ac*' -- "$out2"; echo $status) -eq 0
+set -e MOCK_CLAUDE_ARGS
+command rm -f $args_capture
+teardown $repo
