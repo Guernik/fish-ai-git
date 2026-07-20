@@ -22,7 +22,12 @@ https://github.com/user-attachments/assets/4e26e62b-01b6-496c-b92c-aa978dc4f766
 
 https://github.com/user-attachments/assets/958a07ad-5350-4e9c-bd17-80a9a4f8724b
 
-(Warning due to the use of squash merge)
+## Requirements
+
+- fish ≥ 3.6
+- [`claude`](https://claude.com/claude-code) — for `ac` and `ghpr`
+- [`gh`](https://cli.github.com) — for `ghpr`
+- `git`
 
 ## Installation
 
@@ -32,7 +37,7 @@ https://github.com/user-attachments/assets/958a07ad-5350-4e9c-bd17-80a9a4f8724b
 fisher install Guernik/fish-ai-git
 ```
 
-Update later with `fisher update`.
+Update later with `fisher update Guernik/fish-ai-git`
 
 ### Directly from repo
 
@@ -44,6 +49,15 @@ just install-dev     # symlinks functions/ and conf.d/ into ~/.config/fish
 
 Remove the links with `just uninstall-dev`.
 
+## My flow
+
+```mermaid
+flowchart LR
+    A["ac"] --> B["ghpr"] --> C(gitm)
+    note["on feature branch"] -.-> A
+    style note fill:none,stroke:none
+```
+
 ## Functions
 
 | Function | What it does                                                                                                                                                                            |
@@ -52,6 +66,24 @@ Remove the links with `just uninstall-dev`.
 | `ghpr`   | Push the current branch and open a GitHub PR with an AI-generated title and body. Detects the base branch automatically; `w` opens the browser pre-filled instead of creating directly. |
 | `gitm`   | Switch to the repo's default branch, `pull`, and delete the branch you left (only if it's already merged — unmerged work is never dropped).                                             |
 | `gitc`   | Shorthand for `git checkout` (with `git checkout` completions).                                                                                                                         |
+
+### Inside `ac`
+
+```mermaid
+flowchart LR
+    A["ac"] --> B["git add -A"] --> C(["claude → message"]) --> D["git commit"]
+    classDef ai fill:#4AAE47,stroke:#2f7a2d,color:#fff;
+    class C ai;
+```
+
+### Inside `ghpr`
+
+```mermaid
+flowchart LR
+    A["ghpr"] --> B["git push"] --> C(["claude → PR title + body"]) --> D["gh pr create"]
+    classDef ai fill:#4AAE47,stroke:#2f7a2d,color:#fff;
+    class C ai;
+```
 
 ### Examples
 
@@ -70,13 +102,6 @@ ghpr
 gitm
 # → back on main, pulled, and the merged feature branch cleaned up
 ```
-
-## Requirements
-
-- fish ≥ 3.6
-- [`claude`](https://claude.com/claude-code) — for `ac` and `ghpr`
-- [`gh`](https://cli.github.com) — for `ghpr`
-- `git`
 
 Each function checks for the tools it needs and prints an install hint if one is
 missing.
