@@ -53,6 +53,37 @@ set -e MOCK_CLAUDE_OUTPUT
 command rm -f $gh_capture
 teardown $repo
 
+# --- Strips preamble/separator noise before the title ------------------------
+set repo (setup_repo)
+use_mocks
+set -l gh_capture (command mktemp)
+set -gx MOCK_GH_ARGS $gh_capture
+# Reproduce the failing case: the model prepends a preamble sentence and a
+# '---' rule before the real title. ghpr must still extract the real title.
+set -gx MOCK_CLAUDE_OUTPUT "Based on the commit messages and extensive diff provided, here's the PR:
+
+---
+
+feat(ai): AI settings screen and enhanced review UX
+
+## Summary
+Adds a feature.
+
+## Changes
+- add the feature"
+command git checkout --quiet -b feature-noise
+echo work >feature-noise.txt
+command git add feature-noise.txt
+command git commit --quiet -m "feat: add feature file"
+echo y | ghpr >/dev/null 2>&1
+set -l gh_args (command cat $gh_capture)
+@test "ghpr uses the real title, not the preamble" (string match -q '*feat(ai): AI settings screen and enhanced review UX*' -- "$gh_args"; echo $status) -eq 0
+@test "ghpr drops the preamble line from the title" (string match -q '*Based on the commit messages*' -- "$gh_args"; echo $status) -eq 1
+set -e MOCK_GH_ARGS
+set -e MOCK_CLAUDE_OUTPUT
+command rm -f $gh_capture
+teardown $repo
+
 # --- Uses $GHPR_MODEL when set -----------------------------------------------
 set repo (setup_repo)
 use_mocks

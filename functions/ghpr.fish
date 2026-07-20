@@ -114,12 +114,38 @@ Output format (exactly):
 
 Rules:
 - Base the content on the commit messages and diff, not speculation.
-- Output ONLY the raw title and body. No code fences around the whole thing, no preamble, no quotes." | string collect)
+- The VERY FIRST line of your output must be the title itself. Do not precede it with any preamble, explanation, '---' separator, or code fence." | string collect)
 
     if test -z (string trim -- "$pr" | string collect)
         echo "Failed to generate PR content."
         return 1
     end
+
+    # Sanitize the model output before parsing. Haiku sometimes ignores the
+    # "no preamble" instruction and emits lines like "Here's the PR:", a '---'
+    # rule, or code fences before the real title — which would otherwise be
+    # captured as the title. Drop those leading noise lines so the first
+    # surviving line is the actual title.
+    set -l cleaned
+    set -l started 0
+    for line in (printf '%s\n' $pr | string split \n)
+        if test $started -eq 0
+            set -l trimmed (string trim -- "$line")
+            # Skip leading blank lines, markdown/hr separators, code fences,
+            # and preamble sentences (a line ending in ':' before any title).
+            if test -z "$trimmed"
+                continue
+            else if string match -qr '^(-{3,}|\*{3,}|_{3,}|`{3,}.*|~{3,}.*)$' -- "$trimmed"
+                continue
+            else if string match -qr ':\s*$' -- "$trimmed"
+                continue
+            else
+                set started 1
+            end
+        end
+        set -a cleaned $line
+    end
+    set -l pr (string join -- \n $cleaned)
 
     # First line is the title; the rest (after the blank line) is the body.
     set -l title (printf '%s\n' $pr | head -n 1 | string trim)
