@@ -71,6 +71,41 @@ gitm
 # → back on main, pulled, and the merged feature branch cleaned up
 ```
 
+### How `ac` and `ghpr` work
+
+```mermaid
+flowchart TD
+    A["ac"] --> B["git add -A"]
+    B --> C{"staged<br/>changes?"}
+    C -->|no| X["bail"]
+    C -->|yes| D(["claude → commit message"])
+    D --> E{"Commit?<br/>Y / e / n"}
+    E -->|Y| F["git commit"]
+    E -->|e| G["git commit -e"]
+    E -->|n| H["abort<br/>(stays staged)"]
+
+    classDef ai fill:#4AAE47,stroke:#2f7a2d,color:#fff;
+    classDef ask fill:#f4c542,stroke:#b8860b,color:#000;
+    class D ai;
+    class C,E ask;
+```
+
+```mermaid
+flowchart TD
+    A["ghpr"] --> B{"commits<br/>beyond base?"}
+    B -->|no| X["bail"]
+    B -->|yes| C(["claude → PR title + body"])
+    C --> D{"Push & PR?<br/>Y / w / n"}
+    D -->|Y| E["git push<br/>gh pr create"]
+    D -->|w| F["git push<br/>gh pr create --web"]
+    D -->|n| G["abort"]
+
+    classDef ai fill:#4AAE47,stroke:#2f7a2d,color:#fff;
+    classDef ask fill:#f4c542,stroke:#b8860b,color:#000;
+    class C ai;
+    class B,D ask;
+```
+
 ## Requirements
 
 - fish ≥ 3.6
