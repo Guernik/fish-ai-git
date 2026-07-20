@@ -1,4 +1,21 @@
 function ghpr --description "Push the current branch and open a GitHub PR with an AI-generated title and body"
+    argparse h/help -- $argv
+    or return 1
+    if set -q _flag_help
+        echo "usage: ghpr [-h|--help]"
+        echo
+        echo "Push the current branch and open a GitHub PR with an AI-generated"
+        echo "title and body. The base branch is detected automatically from the"
+        echo "remote's default branch. Shows the title/body and prompts before"
+        echo "pushing: [Y] push and create the PR, [w] push and open the browser"
+        echo "pre-filled, [n] abort."
+        echo
+        echo "The model defaults to \$GHPR_MODEL (haiku). Noisy/generated files"
+        echo "are hidden from the diff sent to the model; the PR still contains"
+        echo "every commit."
+        return 0
+    end
+
     if not command -q gh
         echo "gh CLI not found. Install it from https://cli.github.com."
         return 1

@@ -70,3 +70,14 @@ set -e GHPR_MODEL
 set -e MOCK_CLAUDE_ARGS
 command rm -f $args_capture
 teardown $repo
+
+# --- --help prints usage (no repo/deps needed) -------------------------------
+set repo (setup_repo)
+use_mocks
+set -l out (ghpr --help 2>&1)
+@test "ghpr --help exits 0" $status -eq 0
+@test "ghpr --help prints usage" (string match -q '*usage: ghpr*' -- "$out"; echo $status) -eq 0
+set -l out2 (ghpr -h 2>&1)
+@test "ghpr -h exits 0" $status -eq 0
+@test "ghpr -h prints usage" (string match -q '*usage: ghpr*' -- "$out2"; echo $status) -eq 0
+teardown $repo

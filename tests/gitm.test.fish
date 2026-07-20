@@ -38,3 +38,14 @@ gitm >/dev/null 2>&1
 @test "gitm still switches to default even with unmerged prev" (command git rev-parse --abbrev-ref HEAD) = main
 @test "gitm does not delete an unmerged branch" (command git rev-parse --verify --quiet refs/heads/unmerged >/dev/null; echo $status) -eq 0
 teardown $repo
+
+# --- --help prints usage -----------------------------------------------------
+set repo (setup_repo)
+use_mocks
+set -l out (gitm --help 2>&1)
+@test "gitm --help exits 0" $status -eq 0
+@test "gitm --help prints usage" (string match -q '*usage: gitm*' -- "$out"; echo $status) -eq 0
+set -l out2 (gitm -h 2>&1)
+@test "gitm -h exits 0" $status -eq 0
+@test "gitm -h prints usage" (string match -q '*usage: gitm*' -- "$out2"; echo $status) -eq 0
+teardown $repo

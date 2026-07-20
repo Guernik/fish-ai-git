@@ -1,4 +1,16 @@
 function gitm --description "Switch to the default branch, pull, and delete the branch you left"
+    argparse h/help -- $argv
+    or return 1
+    if set -q _flag_help
+        echo "usage: gitm [-h|--help]"
+        echo
+        echo "Switch to the repo's default branch (detected from the remote),"
+        echo "pull it, and delete the branch you just left. Uses 'git branch -d',"
+        echo "which refuses to delete an unmerged branch, so unmerged work is"
+        echo "never dropped."
+        return 0
+    end
+
     if not git rev-parse --is-inside-work-tree >/dev/null 2>&1
         echo "Not a git repository."
         return 1
