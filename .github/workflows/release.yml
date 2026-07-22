@@ -1,0 +1,46 @@
+name: Release
+
+# Publishes a GitHub Release when a signed version tag is pushed. Users install
+# and pin to these tags (e.g. `fisher install Guernik/fish_functions@v1.2.0`)
+# rather than tracking `main`. See SECURITY.md for how to verify a tag's SSH
+# signature before trusting a release.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to create the GitHub Release for the tag
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # need tags/history so `git tag -v` and notes work
+
+      - name: Verify the tag is signed
+        # Releases must come from a signed tag. This does not by itself prove
+        # WHO signed it (that's the user's job with the published key in
+        # SECURITY.md), but it refuses to cut a release from an unsigned tag.
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          if git cat-file -p "refs/tags/${tag}" | grep -q 'BEGIN SSH SIGNATURE\|BEGIN PGP SIGNATURE'; then
+            echo "Tag ${tag} is signed."
+          else
+            echo "::error::Tag ${tag} is not signed. Releases must be cut from signed tags (see SECURITY.md)." >&2
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release create "$tag" \
+            --title "$tag" \
+            --generate-notes \
+            --verify-tag

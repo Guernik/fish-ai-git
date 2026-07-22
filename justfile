@@ -38,7 +38,7 @@ uninstall-dev:
 lint:
     #!/usr/bin/env fish
     set -l failed 0
-    for f in functions/*.fish conf.d/*.fish tests/*.fish tests/helpers/*.fish
+    for f in functions/*.fish conf.d/*.fish scripts/*.fish tests/*.fish tests/helpers/*.fish
         if not fish -n $f
             echo "syntax error: $f"
             set failed 1
@@ -55,7 +55,7 @@ lint:
 
 # Auto-format every fish file in place.
 fmt:
-    fish_indent -w functions/*.fish conf.d/*.fish tests/*.fish tests/helpers/*.fish
+    fish_indent -w functions/*.fish conf.d/*.fish scripts/*.fish tests/*.fish tests/helpers/*.fish
 
 # Run the fishtape test suite (needs: fisher install jorgebucaran/fishtape).
 test:
@@ -70,6 +70,11 @@ test:
     # `fishtape tests/*.test.fish` from inside a just recipe mis-counts the
     # TAP summary, so invoke it via `fish -c` with the expanded glob.
     fish -c 'fishtape tests/*.test.fish'
+
+# Security audit: scan the shipped files for high-signal dangerous patterns.
+# Defends against contributor mistakes, NOT a rogue maintainer (see SECURITY.md).
+audit:
+    fish {{justfile_directory()}}/scripts/audit.fish
 
 # Install the pre-commit hooks (lint on commit, tests on push; needs pre-commit).
 install-hooks:

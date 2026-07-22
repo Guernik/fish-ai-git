@@ -1,0 +1,21 @@
+# Code owners for fish-ai-git.
+#
+# These paths cover the code that actually ships to users' machines and the
+# CI/release machinery that guards it. Requiring owner review on changes here
+# makes an unreviewed change to shipped code stand out. Combined with branch
+# protection (see SECURITY.md), it forces every such change through a public,
+# reviewed PR.
+
+# Shipped functions and event handlers (run on user machines).
+/functions/       @Guernik
+/conf.d/          @Guernik
+
+# The audit scanner and its runner.
+/scripts/         @Guernik
+/justfile         @Guernik
+
+# CI and release workflows, and this ownership file itself.
+/.github/         @Guernik
+
+# Security policy and verification instructions.
+/SECURITY.md      @Guernik
