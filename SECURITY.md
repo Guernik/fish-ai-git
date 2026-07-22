@@ -95,14 +95,9 @@ Release tags are **signed with SSH**. To verify one yourself:
 
 ## Branch protection (what to expect on `main`)
 
-So you can check these yourself in the repo's **Settings → Branches**, `main`
-is configured to:
-
 - require a pull request before merging, with at least one approving review;
 - require the CI status checks (lint, test, audit) to pass;
 - disallow force-pushes and branch deletion.
-
-If any of these are ever _not_ true, that itself is a signal worth questioning.
 
 ## Scope
 
