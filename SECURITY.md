@@ -2,7 +2,7 @@
 
 These functions run on your machine and can update automatically via
 `fisher update`. That makes trust a real question, and this document is meant to
-answer it **honestly** — including where the guarantees stop.
+answer it — including where the guarantees stop.
 
 ## Reporting a vulnerability
 
@@ -11,16 +11,13 @@ issue:
 
 - Use GitHub's **[Report a vulnerability](../../security/advisories/new)**
   (Security → Advisories) to open a private advisory, **or**
-- email **emilio.guernik@gmail.com** with details and, ideally, a proof of
+- email **contact@emilioguernik.com** with details and, ideally, a proof of
   concept.
 
 You'll get an acknowledgement as soon as possible. Please give a reasonable
 window to fix before any public disclosure.
 
 ## What protects you — and what doesn't
-
-There are two different threats, and they need two different kinds of defense.
-Be clear-eyed about which is which.
 
 ### 1. A malicious or mistaken outside contributor
 

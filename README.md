@@ -176,7 +176,7 @@ just install-hooks
 ## Security
 
 These functions run on your machine and can update via `fisher update`, so trust
-matters. [**SECURITY.md**](SECURITY.md) explains — honestly — what protects you
+matters. [**SECURITY.md**](SECURITY.md) explains what protects you
 and what doesn't:
 
 - **Pin to a signed release** (`…@v1.0.0`) and **verify its SSH signature** with
@@ -189,7 +189,7 @@ and what doesn't:
 - You should still audit the code you run. Pinning to one immutable, signed
   version is what makes that practical.
 
-Found a vulnerability? See [SECURITY.md](SECURITY.md) for private reporting.
+Feel free to open an issue or PR if you have any concerns.
 
 ## License
 
