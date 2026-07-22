@@ -18,3 +18,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `$AC_MODEL` / `$GHPR_MODEL` to override the Claude model.
 - Fishtape test suite with mocked `claude`/`gh` CLIs.
 - `justfile`, pre-commit config, and GitHub Actions CI (lint + test).
+
+### Security
+
+- `SECURITY.md` documenting the trust model, private reporting, signed-release
+  verification, and branch-protection expectations.
+- Signed, pinned releases: a `release.yml` workflow cuts a GitHub Release from
+  signed `v*` tags so users can `fisher install …@vX.Y.Z` and verify with
+  `git tag -v`.
+- `just audit` — a high-signal scan of the shipped files for dangerous shell
+  patterns, run on every PR in CI and reported as a sticky PR comment. (Scoped
+  to contributor mistakes, not a defense against a malicious maintainer.)
+- `.github/CODEOWNERS` requiring owner review of shipped code and CI/release
+  workflows.
+- CI actions pinned to commit SHAs; workflow permissions set to least
+  privilege.

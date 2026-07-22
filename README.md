@@ -3,6 +3,7 @@
 [![CI](https://github.com/Guernik/fish-ai-git/actions/workflows/ci.yml/badge.svg)](https://github.com/Guernik/fish-ai-git/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![fish shell](https://img.shields.io/badge/shell-fish-4AAE47.svg)](https://fishshell.com/)
+[![Security policy](https://img.shields.io/badge/security-policy-blue.svg)](SECURITY.md)
 
 A small, focused set of [fish](https://fishshell.com/) functions for an
 AI-assisted git workflow. Stage-and-commit with an AI-written
@@ -32,6 +33,18 @@ https://github.com/user-attachments/assets/958a07ad-5350-4e9c-bd17-80a9a4f8724b
 ## Installation
 
 ### Using [fisher](https://github.com/jorgebucaran/fisher)?
+
+**Recommended — pin to a signed release** so you only run immutable, verifiable
+versions instead of the moving `main` tip:
+
+```console
+fisher install Guernik/fish-ai-git@v1.0.0
+```
+
+You then update deliberately by bumping the tag. See
+[**Security**](#security) for why this matters and how to verify a release.
+
+Or track `main` (auto-updates every merge on the next `fisher update`):
 
 ```console
 fisher install Guernik/fish-ai-git
@@ -138,6 +151,7 @@ just            # list recipes
 just lint       # syntax + formatting check (fish -n, fish_indent --check)
 just fmt        # auto-format every fish file
 just test       # run the fishtape suite (mocks claude/gh; real temp git repos)
+just audit      # scan shipped files for high-signal dangerous patterns
 ```
 
 Tests use [fishtape](https://github.com/jorgebucaran/fishtape). Install it once
@@ -158,6 +172,24 @@ and `just test` on push. With [pre-commit installed](https://pre-commit.com/#ins
 ```console
 just install-hooks
 ```
+
+## Security
+
+These functions run on your machine and can update via `fisher update`, so trust
+matters. [**SECURITY.md**](SECURITY.md) explains — honestly — what protects you
+and what doesn't:
+
+- **Pin to a signed release** (`…@v1.0.0`) and **verify its SSH signature** with
+  `git tag -v` before trusting it. This is what protects you even from a
+  compromised maintainer.
+- Every PR is gated by required review, branch protection, and an automated
+  `just audit` scan (posted as a PR comment). That scan catches contributor
+  mistakes — it is **not** a defense against a rogue maintainer, and SECURITY.md
+  says so plainly.
+- You should still audit the code you run. Pinning to one immutable, signed
+  version is what makes that practical.
+
+Found a vulnerability? See [SECURITY.md](SECURITY.md) for private reporting.
 
 ## License
 
