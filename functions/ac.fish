@@ -101,6 +101,7 @@ Rules:
 - The main description paragraph and the 'Changes:' section are REQUIRED — always include both, even for small changes.
 - Use '!' after the type/scope and/or a 'BREAKING CHANGE:' footer for breaking changes.
 - Use real blank lines between sections (actual newline characters, not the two characters backslash-n).
+- Do not be too verbose while listing simple changes. For instance 'Update svg2fcm draft header from "#### wip!" to "## Draft" for clarity' is bad. 'Update svg2fcm draft header' is good.
 - Output ONLY the raw commit message. No backticks around the whole message, no quotes, no preamble." | string trim | string collect)
 
     if test -z "$msg"
