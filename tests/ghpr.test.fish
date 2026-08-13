@@ -84,6 +84,40 @@ set -e MOCK_CLAUDE_OUTPUT
 command rm -f $gh_capture
 teardown $repo
 
+# --- Unwraps a fenced PR without leaving a stray closing fence ---------------
+# The old inline sanitizer only skipped *leading* fence lines, so a PR wrapped
+# in ``` kept its closing fence at the end of the body and posted it to GitHub.
+set repo (setup_repo)
+use_mocks
+set -l gh_capture (command mktemp)
+set -gx MOCK_GH_ARGS $gh_capture
+set -l fence '```'
+set -gx MOCK_CLAUDE_OUTPUT "Here's the PR:
+
+$fence
+feat(ui): add settings screen
+
+## Summary
+Adds a settings screen.
+
+## Changes
+- add the screen
+$fence"
+command git checkout --quiet -b feature-fenced
+echo work >feature-fenced.txt
+command git add feature-fenced.txt
+command git commit --quiet -m "feat: add fenced feature"
+echo y | ghpr >/dev/null 2>&1
+set -l gh_args (command cat $gh_capture)
+@test "ghpr uses the fenced title" (string match -q '*feat(ui): add settings screen*' -- "$gh_args"; echo $status) -eq 0
+@test "ghpr leaves no code fence in the PR body" (string match -q '*```*' -- "$gh_args"; echo $status) -eq 1
+@test "ghpr drops the preamble before the fence" (string match -q "*Here's the PR*" -- "$gh_args"; echo $status) -eq 1
+@test "ghpr keeps the PR body sections" (string match -q '*## Summary*' -- "$gh_args"; echo $status) -eq 0
+set -e MOCK_GH_ARGS
+set -e MOCK_CLAUDE_OUTPUT
+command rm -f $gh_capture
+teardown $repo
+
 # --- Uses $GHPR_MODEL when set -----------------------------------------------
 set repo (setup_repo)
 use_mocks
