@@ -1,3 +1,54 @@
+# Strip the noise models sometimes wrap around a commit message: a preamble
+# line ("Now I'll create the commit message:") and/or a ``` code fence.
+#
+# Plain text in, plain text out — no JSON, no external tools. When a fence is
+# present its contents ARE the message and everything outside it is dropped;
+# otherwise we only skip leading preamble/separator/blank lines, so the real
+# message (which may itself contain backticks) is never altered.
+function _ac_clean_message --argument-names raw
+    set -l lines (printf '%s\n' $raw | string split \n)
+
+    # --- Fenced: take the first fenced block, ignoring anything around it.
+    set -l fenced
+    set -l in_fence 0
+    for line in $lines
+        if string match -qr '^\s*(`{3,}|~{3,})' -- "$line"
+            if test $in_fence -eq 0
+                set in_fence 1
+                continue
+            end
+            break
+        end
+        test $in_fence -eq 1; and set -a fenced $line
+    end
+
+    if test $in_fence -eq 1
+        string join -- \n $fenced | string trim | string collect
+        return 0
+    end
+
+    # --- Unfenced: drop leading blank lines, horizontal rules, and a preamble
+    # sentence (a line ending in ':') that appears before the real header.
+    set -l cleaned
+    set -l started 0
+    for line in $lines
+        if test $started -eq 0
+            set -l t (string trim -- "$line")
+            if test -z "$t"
+                continue
+            else if string match -qr '^(-{3,}|\*{3,}|_{3,})$' -- "$t"
+                continue
+            else if string match -qr ':\s*$' -- "$t"
+                continue
+            end
+            set started 1
+        end
+        set -a cleaned $line
+    end
+
+    string join -- \n $cleaned | string trim | string collect
+end
+
 function ac --description "Stage all changes and commit with an AI-generated Conventional Commit message"
     argparse h/help -- $argv
     or return 1
@@ -66,7 +117,7 @@ function ac --description "Stage all changes and commit with an AI-generated Con
 
     echo "Generating commit message…"
 
-    set -l msg (printf '%s\n' $diff | claude -p --model $AC_MODEL "Write a single git commit message for the following staged diff, strictly following the Conventional Commits 1.0.0 spec AND the project's required structure.
+    set -l raw (printf '%s\n' $diff | claude -p --model $AC_MODEL "Write a single git commit message for the following staged diff, strictly following the Conventional Commits 1.0.0 spec AND the project's required structure.
 
 Required structure (in this exact order):
 1. Header line: <type>[optional scope]: <description>
@@ -102,7 +153,9 @@ Rules:
 - Use '!' after the type/scope and/or a 'BREAKING CHANGE:' footer for breaking changes.
 - Use real blank lines between sections (actual newline characters, not the two characters backslash-n).
 - Do not be too verbose while listing simple changes. For instance 'Update svg2fcm draft header from "#### wip!" to "## Draft" for clarity' is bad. 'Update svg2fcm draft header' is good.
-- Output ONLY the raw commit message. No backticks around the whole message, no quotes, no preamble." | string trim | string collect)
+- Output ONLY the raw commit message. Do not wrap it in a code fence, do not add quotes around it, and do not write any preamble or commentary before or after it." | string collect)
+
+    set -l msg (_ac_clean_message "$raw" | string collect)
 
     if test -z "$msg"
         echo "Failed to generate a commit message."

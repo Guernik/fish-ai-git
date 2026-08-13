@@ -142,6 +142,11 @@ what the model sees; every staged file is still committed. They also cap the
 diff at ~100 KB so a huge change can't blow up the prompt. Edit the `exclude`
 list at the top of each function to tune this.
 
+Models occasionally ignore the "raw message only" instruction and answer with a
+preamble ("Now I'll create the commit message:") or wrap the message in a
+Markdown code fence. `ac` strips both before showing you the message, so that
+noise never reaches the commit.
+
 ## Development
 
 This repo uses a [`justfile`](justfile):
