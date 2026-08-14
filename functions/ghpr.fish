@@ -1,8 +1,12 @@
 function ghpr --description "Push the current branch and open a GitHub PR with an AI-generated title and body"
-    argparse h/help -- $argv
+    argparse h/help v/version -- $argv
     or return 1
+    if set -q _flag_version
+        echo "ghpr (fish-ai-git) v"(_fish_ai_git_version)
+        return 0
+    end
     if set -q _flag_help
-        echo "usage: ghpr [-h|--help]"
+        echo "usage: ghpr [-h|--help] [-v|--version]"
         echo
         echo "Push the current branch and open a GitHub PR with an AI-generated"
         echo "title and body. The base branch is detected automatically from the"
@@ -89,7 +93,7 @@ function ghpr --description "Push the current branch and open a GitHub PR with a
         set diff (git diff $range --stat | head -c $max_bytes | string collect)
     end
 
-    echo "Generating PR title and body…"
+    echo "ghpr v"(_fish_ai_git_version)": Generating PR title and body…"
 
     set -l context "Branch: $branch
 Base: $base

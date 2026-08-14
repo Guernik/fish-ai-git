@@ -1,8 +1,12 @@
 function gitm --description "Switch to the default branch, pull, and delete the branch you left"
-    argparse h/help -- $argv
+    argparse h/help v/version -- $argv
     or return 1
+    if set -q _flag_version
+        echo "gitm (fish-ai-git) v"(_fish_ai_git_version)
+        return 0
+    end
     if set -q _flag_help
-        echo "usage: gitm [-h|--help]"
+        echo "usage: gitm [-h|--help] [-v|--version]"
         echo
         echo "Switch to the repo's default branch (detected from the remote),"
         echo "pull it, and delete the branch you just left. Uses 'git branch -d',"

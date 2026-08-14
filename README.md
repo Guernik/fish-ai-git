@@ -38,7 +38,7 @@ https://github.com/user-attachments/assets/958a07ad-5350-4e9c-bd17-80a9a4f8724b
 versions instead of the moving `main` tip:
 
 ```console
-fisher install Guernik/fish-ai-git@v1.0.0
+fisher install Guernik/fish-ai-git@v1.2.0
 ```
 
 You then update deliberately by bumping the tag. See
@@ -153,12 +153,42 @@ so it never reaches your commit or PR.
 This repo uses a [`justfile`](justfile):
 
 ```console
-just            # list recipes
-just lint       # syntax + formatting check (fish -n, fish_indent --check)
-just fmt        # auto-format every fish file
-just test       # run the fishtape suite (mocks claude/gh; real temp git repos)
-just audit      # scan shipped files for high-signal dangerous patterns
+just                  # list recipes
+just lint             # syntax + formatting check (fish -n, fish_indent --check)
+just fmt              # auto-format every fish file
+just test             # run the fishtape suite (mocks claude/gh; real temp git repos)
+just audit            # scan shipped files for high-signal dangerous patterns
+just version          # print the current version
+just version-check    # verify VERSION and conf.d agree (also runs in CI)
 ```
+
+### Versioning and releases
+
+Each command reports its version — `ac --version`, or in the progress line
+(`ac v1.2.0: Generating commit message…`).
+
+The root [`VERSION`](VERSION) file is the source of truth, but Fisher installs
+only `functions/` and `conf.d/`, so the number also lives in
+`conf.d/fish-ai-git.fish`. `just bump` writes both, `just version-check` proves
+they agree, and CI fails if they drift.
+
+Releasing takes no separate commit or PR — the bump rides along with the work:
+
+```console
+# On your feature branch, as part of the PR you're already opening:
+just bump 1.2.0                          # writes VERSION + conf.d, no commit
+git add VERSION conf.d/fish-ai-git.fish  # include it in the PR
+
+# After that PR is merged, from an up-to-date main:
+just push-version                        # signs and pushes tag v1.2.0
+```
+
+`just bump` refuses a version whose tag already exists (locally or on `origin`)
+and anything that isn't plain `X.Y.Z`. `just push-version` refuses to run off
+`main`, with a dirty tree, or when `main` has unpushed commits — so a tag always
+points at merged, pushed work. Pushing the tag triggers
+[`release.yml`](.github/workflows/release.yml), which verifies the signature and
+publishes the GitHub Release.
 
 Tests use [fishtape](https://github.com/jorgebucaran/fishtape). Install it once
 with fisher (the [documented](https://github.com/jorgebucaran/fishtape) way):
@@ -185,7 +215,7 @@ These functions run on your machine and can update via `fisher update`, so trust
 matters. [**SECURITY.md**](SECURITY.md) explains what protects you
 and what doesn't:
 
-- **Pin to a signed release** (`…@v1.0.0`) and **verify its SSH signature** with
+- **Pin to a signed release** (`…@v1.2.0`) and **verify its SSH signature** with
   `git tag -v` before trusting it. This is what protects you even from a
   compromised maintainer.
 - Every PR is gated by required review, branch protection, and an automated
