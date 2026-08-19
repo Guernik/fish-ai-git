@@ -34,6 +34,110 @@ uninstall-dev:
         end
     end
 
+# Print the current plugin version.
+version:
+    @cat {{justfile_directory()}}/VERSION
+
+# Verify VERSION and conf.d agree (they must — Fisher never ships VERSION).
+version-check:
+    #!/usr/bin/env fish
+    set -l root {{justfile_directory()}}
+    set -l file_version (string trim <$root/VERSION)
+    set -l conf_version (string match -rg '^set -g __fish_ai_git_version (.+)$' <$root/conf.d/fish-ai-git.fish | string trim)
+    if test -z "$file_version"
+        echo "VERSION is empty" >&2
+        exit 1
+    end
+    if test "$file_version" != "$conf_version"
+        echo "version mismatch: VERSION=$file_version but conf.d has '$conf_version'" >&2
+        echo "Run `just bump $file_version` to sync them." >&2
+        exit 1
+    end
+    echo "version ok: $file_version"
+
+# Bump the version in VERSION + conf.d, WITHOUT committing or tagging.
+# Run this on your feature branch and include the change in that PR, so a
+# release needs no separate commit. Usage: just bump 1.2.0
+bump version:
+    #!/usr/bin/env fish
+    set -l root {{justfile_directory()}}
+    set -l new {{version}}
+
+    # Refuse anything that isn't plain semver — the tag and Fisher pin depend
+    # on this shape (v1.2.3), and a typo here is painful to undo after tagging.
+    if not string match -qr '^[0-9]+\.[0-9]+\.[0-9]+$' -- $new
+        echo "version must be X.Y.Z (got '$new')" >&2
+        exit 1
+    end
+
+    # Never bump onto a version that has already shipped. Check local tags and,
+    # when the remote is reachable, the remote's tags too — a tag someone else
+    # already pushed would not exist locally.
+    if command git -C $root rev-parse -q --verify "refs/tags/v$new" >/dev/null
+        echo "tag v$new already exists locally" >&2
+        exit 1
+    end
+    set -l remote_tag (command git -C $root ls-remote --tags origin "refs/tags/v$new" 2>/dev/null | string collect)
+    if test -n "$remote_tag"
+        echo "tag v$new already exists on origin" >&2
+        exit 1
+    end
+
+    # Write both places: VERSION is the source of truth, conf.d is what Fisher
+    # actually installs. Done in fish rather than `sed -i` so the recipe works
+    # the same on macOS (BSD sed) and Linux (GNU sed).
+    echo $new >$root/VERSION
+    set -l conf $root/conf.d/fish-ai-git.fish
+    set -l patched (string replace -r '^set -g __fish_ai_git_version .*' "set -g __fish_ai_git_version $new" <$conf | string collect)
+    printf '%s\n' $patched >$conf
+
+    just version-check
+    echo
+    echo "Bumped to v$new (not committed)."
+    echo "Stage it with the rest of your PR:"
+    echo "    git add VERSION conf.d/fish-ai-git.fish"
+
+# Create and push the signed tag for the version in VERSION.
+# Run this on main AFTER the PR carrying the bump has been merged.
+push-version:
+    #!/usr/bin/env fish
+    set -l root {{justfile_directory()}}
+    just version-check
+    set -l new (string trim <$root/VERSION)
+
+    # The tag must point at merged, pushed work — never at local-only commits.
+    set -l branch (command git -C $root rev-parse --abbrev-ref HEAD)
+    if test "$branch" != main
+        echo "on branch '$branch' — run this from main after the PR is merged" >&2
+        exit 1
+    end
+    set -l dirty (command git -C $root status --porcelain | string collect)
+    if test -n "$dirty"
+        echo "working tree is dirty — commit or stash first" >&2
+        exit 1
+    end
+    if command git -C $root rev-parse -q --verify "refs/tags/v$new" >/dev/null
+        echo "tag v$new already exists" >&2
+        exit 1
+    end
+
+    command git -C $root fetch --quiet origin main
+    set -l unpushed (command git -C $root log --oneline origin/main..HEAD | string collect)
+    if test -n "$unpushed"
+        echo "local main is ahead of origin/main — push it first:" >&2
+        printf '%s\n' $unpushed >&2
+        exit 1
+    end
+
+    just lint
+    just test
+
+    # Signed tag: the release workflow refuses to publish an unsigned one.
+    command git -C $root tag -s "v$new" -m "v$new"
+    command git -C $root push origin "v$new"
+    echo
+    echo "Pushed v$new — the release workflow will publish it."
+
 # Lint: syntax-check and formatting-check every fish file.
 lint:
     #!/usr/bin/env fish

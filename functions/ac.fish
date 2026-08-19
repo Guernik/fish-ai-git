@@ -1,8 +1,12 @@
 function ac --description "Stage all changes and commit with an AI-generated Conventional Commit message"
-    argparse h/help -- $argv
+    argparse h/help v/version -- $argv
     or return 1
+    if set -q _flag_version
+        echo "ac (fish-ai-git) v"(_fish_ai_git_version)
+        return 0
+    end
     if set -q _flag_help
-        echo "usage: ac [-h|--help]"
+        echo "usage: ac [-h|--help] [-v|--version]"
         echo
         echo "Stage all changes (git add -A) and commit with an AI-generated"
         echo "Conventional Commit message. Shows the message and prompts before"
@@ -64,9 +68,9 @@ function ac --description "Stage all changes and commit with an AI-generated Con
         set diff (git diff --cached --stat | head -c $max_bytes | string collect)
     end
 
-    echo "Generating commit message…"
+    echo "ac v"(_fish_ai_git_version)": Generating commit message…"
 
-    set -l msg (printf '%s\n' $diff | claude -p --model $AC_MODEL "Write a single git commit message for the following staged diff, strictly following the Conventional Commits 1.0.0 spec AND the project's required structure.
+    set -l raw (printf '%s\n' $diff | claude -p --model $AC_MODEL "Write a single git commit message for the following staged diff, strictly following the Conventional Commits 1.0.0 spec AND the project's required structure.
 
 Required structure (in this exact order):
 1. Header line: <type>[optional scope]: <description>
@@ -102,7 +106,10 @@ Rules:
 - Use '!' after the type/scope and/or a 'BREAKING CHANGE:' footer for breaking changes.
 - Use real blank lines between sections (actual newline characters, not the two characters backslash-n).
 - Do not be too verbose while listing simple changes. For instance 'Update svg2fcm draft header from "#### wip!" to "## Draft" for clarity' is bad. 'Update svg2fcm draft header' is good.
-- Output ONLY the raw commit message. No backticks around the whole message, no quotes, no preamble." | string trim | string collect)
+- Output ONLY the raw commit message. Do not wrap it in a code fence, do not add quotes around it, and do not write any preamble or commentary before or after it." | string collect)
+
+    # Strip any preamble/code fence the model wrapped around the message.
+    set -l msg (_fish_ai_git_clean_output "$raw" | string collect)
 
     if test -z "$msg"
         echo "Failed to generate a commit message."

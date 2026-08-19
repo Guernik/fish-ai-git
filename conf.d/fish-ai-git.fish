@@ -11,6 +11,15 @@
 
 set -g __fish_ai_git_default_model haiku
 
+# Plugin version, shown by `--version` and in the progress line of `ac`/`ghpr`.
+#
+# The root VERSION file is the source of truth, but Fisher only installs
+# functions/ and conf.d/ — a root file never reaches an installed plugin — so
+# `just release X.Y.Z` writes the number into BOTH places. Keep them in sync via
+# that recipe rather than editing this line by hand (`just version-check`
+# verifies they match, and CI runs it).
+set -g __fish_ai_git_version 1.2.0
+
 function _fish_ai_git_install --on-event fish-ai-git_install
     # Seed defaults only if the user hasn't already set them.
     set -q AC_MODEL; or set -Ux AC_MODEL $__fish_ai_git_default_model

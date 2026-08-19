@@ -30,6 +30,9 @@ jobs:
           mkdir -p ~/.config/fish/functions
           cp "$RUNNER_TEMP/fishtape"/functions/*.fish ~/.config/fish/functions/
 
+      - name: Version check (VERSION must match conf.d)
+        run: just version-check
+
       - name: Lint (syntax + formatting)
         run: just lint
 
